@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Floyd-Warshall Algorithm Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 0;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Floyd-Warshall Algorithm Comparison</h1>
+    <div class="container">
+        <div class="section">
+            <h3>Input Matrix</h3>
+            <table id="inputTable">
+                <tr>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                </tr>
+                <tr>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                </tr>
+                <tr>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                </tr>
+                <tr>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                    <td><input type="number"></td>
+                </tr>
+            </table>
+            <button class="btn" onclick="calculateFloydWarshall('iterative')">Calculate Iterative</button>
+            <button class="btn" onclick="calculateFloydWarshall('recursive')">Calculate Recursive</button>
+        </div>
+
+        <div class="section">
+            <h3>Output Matrix</h3>
+            <table id="outputTable"></table>
+        </div>
+
+        <div class="section">
+            <h3>Execution Time</h3>
+            <p id="executionTime">Click a method to see execution time.</p>
+        </div>
+
+        <div class="section">
+            <h3>Complexity Comparison</h3>
+            <p><strong>Iterative:</strong> Time Complexity - O(n<sup>3</sup>), Space Complexity - O(n<sup>2</sup>)</p>
+            <p><strong>Recursive:</strong> Time Complexity - O(n!), Space Complexity - O(n<sup>2</sup> + k), where k is the recursion depth.</p>
+        </div>
+    </div>
+
+    <script>
+        function calculateFloydWarshall(method) {
+            const inputTable = document.getElementById('inputTable');
+            const outputTable = document.getElementById('outputTable');
+            const executionTimeElement = document.getElementById('executionTime');
+
+            // Extract input matrix from the table
+            let matrix = [];
+            for (let i = 0; i < inputTable.rows.length; i++) {
+                let row = [];
+                for (let j = 0; j < inputTable.rows[i].cells.length; j++) {
+                    let value = parseFloat(inputTable.rows[i].cells[j].children[0].value);
+                    row.push(isNaN(value) ? Infinity : value);
+                }
+                matrix.push(row);
+            }
+
+            // Perform calculation based on method
+            let result;
+            let startTime = performance.now();
+            if (method === 'iterative') {
+                result = floydWarshallIterative(matrix);
+            } else if (method === 'recursive') {
+                let n = matrix.length;
+                result = Array.from({ length: n }, (_, i) => Array.from({ length: n }, (_, j) => calculateRecursive(matrix, i, j, n - 1)));
+            }
+            let endTime = performance.now();
+
+            // Display output matrix
+            outputTable.innerHTML = '';
+            for (let i = 0; i < result.length; i++) {
+                let row = '<tr>';
+                for (let j = 0; j < result[i].length; j++) {
+                    row += `<td>${result[i][j] === Infinity ? '∞' : result[i][j]}</td>`;
+                }
+                row += '</tr>';
+                outputTable.innerHTML += row;
+            }
+
+            // Display execution time
+            executionTimeElement.textContent = `Execution Time (${method}): ${(endTime - startTime).toFixed(2)} ms`;
+        }
+
+        // Iterative implementation
+        function floydWarshallIterative(matrix) {
+            let n = matrix.length;
+            let dist = JSON.parse(JSON.stringify(matrix)); // Clone matrix
+
+            for (let k = 0; k < n; k++) {
+                for (let i = 0; i < n; i++) {
+                    for (let j = 0; j < n; j++) {
+                        dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);
+                    }
+                }
+            }
+
+            return dist;
+        }
+
+        // Recursive implementation
+        function calculateRecursive(matrix, i, j, k) {
+            if (k === -1) {
+                return matrix[i][j];
+            }
+            return Math.min(
+                calculateRecursive(matrix, i, j, k - 1),
+                calculateRecursive(matrix, i, k, k - 1) + calculateRecursive(matrix, k, j, k - 1)
+            );
+        }
+    </script>
+</body>
+</html>
